@@ -1,104 +1,114 @@
-# 🎵 YouTube MP3 Clip
+# 🎵 YouTube MP3 Clip — Gradio UI
 
-Save approximately **3 minutes of YouTube audio as an MP3** using one command in Google Colab.
+Create an MP3 audio clip from a YouTube video using a simple web interface.
 
-No API key required.
+## Features
 
-> Use only for content you own or have permission to download.
+- Paste a YouTube video URL.
+- Choose the start time.
+- Choose a clip length from 1 to 600 seconds.
+- Default clip length: 3 minutes.
+- Listen to the result in the interface.
+- Download the MP3 with one click.
+- No API key required.
 
-## 🚀 Quick start
+Only use this tool for content you own or have permission to download.
 
-Open a Google Colab notebook, paste the following line into a code cell, replace `VIDEO_URL` with your YouTube video link, and run it:
+## 🚀 Run in Google Colab
 
-```python
-!bash -c 'dir=$(mktemp -d) && git clone -q --depth 1 https://github.com/digimarketingai/youtube-mp3.git "$dir" && bash "$dir/run.sh" "$@"' -- "VIDEO_URL" --start 0 --duration 180
-```
-
-The command installs the dependencies and saves the first **180 seconds** of audio to:
-
-```text
-/content/audio_clip.mp3
-```
-
-Keep the quotation marks around your video URL.
-
-## ⏱️ Choose a different section
-
-To extract 3 minutes starting at **1:00**:
+Paste this single line into a Colab code cell and run it:
 
 ```python
-!bash -c 'dir=$(mktemp -d) && git clone -q --depth 1 https://github.com/digimarketingai/youtube-mp3.git "$dir" && bash "$dir/run.sh" "$@"' -- "VIDEO_URL" --start 60 --duration 180
+!bash -c 'set -e; d=$(mktemp -d); git clone -q --depth 1 https://github.com/digimarketingai/youtube-mp3.git "$d"; bash "$d/run.sh" --share'
 ```
 
-### Available options
+### How to use it
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `--start` | `0` | Start time in seconds |
-| `--duration` | `180` | Clip length in seconds |
-| `--output` | `/content/audio_clip.mp3` | Output MP3 path |
+1. Wait for installation to finish.
+2. Open the public Gradio URL printed in the cell output.
+3. Paste your YouTube video URL.
+4. Choose a start time and duration.
+5. Confirm that you have permission to download the content.
+6. Click **Create MP3**.
+7. Listen to the result or click **Download MP3**.
 
-Example with a custom filename:
+Keep the Colab cell running while using the interface.
+Stop the cell when you are finished.
 
-```python
-!bash -c 'dir=$(mktemp -d) && git clone -q --depth 1 https://github.com/digimarketingai/youtube-mp3.git "$dir" && bash "$dir/run.sh" "$@"' -- "VIDEO_URL" --start 30 --duration 120 --output "/content/my_clip.mp3"
-```
+**Privacy:** The Gradio share link is public, not password-protected.
+Anyone with the link can use the running interface. Do not distribute it
+unless you intend to share access to your Colab resources.
 
-This requests a 2-minute clip starting at 0:30.
+## ⏱️ Clip examples
 
-## 📥 Download the MP3 to your computer
+| Start time | Duration | Requested section |
+|------------|----------|-------------------|
+| 0 | 180 | 0:00–3:00 |
+| 60 | 180 | 1:00–4:00 |
+| 30 | 120 | 0:30–2:30 |
 
-The extraction command saves the MP3 in your Colab session. To download it to your computer, run this in another cell:
+All values are in seconds.
 
-```python
-from google.colab import files
-files.download("/content/audio_clip.mp3")
-```
+Clip boundaries are approximate. If a video ends before the requested
+end time, the result may be shorter.
 
-If you used a custom output filename, update the path above.
-
-## 🎧 Listen in Colab
-
-```python
-from IPython.display import Audio, display
-display(Audio(filename="/content/audio_clip.mp3"))
-```
-
-## 📁 Repository files
+## 📁 Repository structure
 
 ```text
 youtube-mp3/
-├── clip.py       # Command-line audio extraction
-├── run.sh        # Dependency installation and launcher
+├── app.py
+├── run.sh
+├── requirements.txt
+├── .gitignore
 └── README.md
 ```
 
+## How it works
+
+- `run.sh` installs dependencies and starts the app.
+- `app.py` provides the Gradio interface.
+- yt-dlp retrieves the requested audio section.
+- FFmpeg converts the result to MP3.
+- Each request uses its own output directory.
+
+The app requests MP3 encoding at 192 kbps. Re-encoding does not improve
+the quality of the original audio.
+
 ## 🛠️ Troubleshooting
 
-### Video unavailable or sign-in required
+### “Sign in to confirm you’re not a bot” or “Video unavailable”
 
-Check that the URL is correct and the video is accessible. YouTube may restrict access from Colab even when a video plays in your browser.
+YouTube may restrict access from Colab. A video playing in your browser
+does not guarantee it can be downloaded from the Colab runtime.
 
-This tool does not bypass sign-in, regional restrictions, or other access controls.
+This app does not bypass sign-in, regional restrictions, or access controls.
 
-### No audio produced
+### No audio was produced
 
-Make sure your start time is before the end of the video. Start time must be zero or greater, and duration must be greater than zero.
+Check that the start time is before the end of the video.
 
-### Download failed
+### Request timed out
 
-Read the error message in the cell output. Installation, network access, or YouTube extraction may fail.
+Jobs are stopped after 10 minutes. Try a shorter clip or another
+accessible video.
 
-### An old MP3 is still present
+### No Gradio link appears
 
-A successful run replaces the selected output file. A failed run may leave a file from an earlier run, so check for the `Saved:` message before downloading.
+Check the cell output for installation or network errors.
+Stop the cell before restarting it.
 
-## 📝 Notes
+### Storage usage
 
-- Designed for standard hosted Google Colab runtimes.
-- Installs yt-dlp, FFmpeg, and Deno.
-- Outputs MP3 with a requested audio bitrate of 192 kbps.
-- Clip timing is approximate; available audio may be shorter than the requested duration.
-- Downloads one video, not an entire playlist.
-- Download your MP3 before your Colab session ends; runtime files are temporary.
-- Compatibility depends on YouTube and yt-dlp and is not guaranteed for every video.
+Successful MP3 files remain in the app's `outputs/` folder for the
+runtime session. Restart the runtime to clear accumulated files.
+
+## Limitations
+
+- Designed for standard hosted Google Colab/Linux environments.
+- Requires internet access.
+- Live streams are rejected.
+- Processes one conversion at a time.
+- Maximum requested clip length: 10 minutes.
+- YouTube extraction is not guaranteed for every video.
+- The public interface is intended for temporary personal use, not
+  unattended public hosting.
